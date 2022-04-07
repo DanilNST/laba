@@ -6,8 +6,11 @@ from typing import TextIO
 def main(source: TextIO, dest: TextIO, key: bytearray):
     input_text = [bytearray.fromhex(line) for line in source.readlines()]
     source_key = [a ^ b for a, b in zip(input_text[2], key)]
-    decrypted = ''.join([''.join([chr(a ^ b) for a, b in zip(source_key, line)]) for line in input_text])
-    dest.write(decrypted)
+
+    for line in input_text:
+        for a, b in zip(line, source_key):
+            dest.write(chr(a ^ b))
+        dest.write('\n')
 
 
 if __name__ == '__main__':
