@@ -4,16 +4,9 @@ import hashlib
 import bcrypt
 
 
-def get100():
-    passwords = []
-    with open('100_passwords.txt') as file:
-        for p in file.readlines():
-            p = p.strip()
-            passwords.append(p)
-    return passwords
 
 
-def get1M():
+def get10M():
     passwords = []
     with open('10m-passwords.txt') as file:
         for p in file.readlines():
@@ -22,16 +15,14 @@ def get1M():
     return passwords
 
 
-
-
-def generate(num, top_100, top_1M):
+def generate(num, top_100, top_10M):
     passwords = []
     for _ in range(num):
         r = randint(1, 100)
         if r in range(1, 10):
             passwords.append(choice(top_100))
         elif r in range(11, 95):
-            passwords.append(choice(top_1M))
+            passwords.append(choice(top_10M))
         else:
             passwords.append(''.join([choice(ascii_letters+digits) for _ in range(randint(8, 16))]))
     return passwords
@@ -48,13 +39,21 @@ def pass_bcrypt(password):
     return salt, hashed
 
 
-top_100 = get100()
-top_1M = get1M()
-passes = generate(100, top_100, top_1M)
-print(passes)
+def main():
+    with open('100_passwords.txt') as file:
+        top_100 = [password.strip() for password in file.readlines()]
 
-file = open('100k.txt', 'w')
-for p in passes:
-    file.write(pass_md5(p))
-    file.write('\n')
-file.close()
+    with open('10m-passwords.txt') as file:
+        top_10m = [password.strip() for password in file.readlines()]
+
+    passwords = generate(100, top_100, top_10m)
+    print('\n'.join(passwords))
+
+    with open('100k.txt', 'w') as file:
+        for passwords in passwords:
+            file.write(pass_md5(passwords))
+            file.write('\n')
+
+
+if __name__ == '__main__':
+    main()
