@@ -46,8 +46,9 @@ class MT19937:
 
         self.index = 0
 
-    def to_size(self, val, bits=32):
-        return val & (2**bits - 1)
+    @staticmethod
+    def to_size(value, bits=32):
+        return value & (2**bits - 1)
 
 
 if __name__ == '__main__':

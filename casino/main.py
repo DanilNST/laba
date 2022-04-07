@@ -1,24 +1,21 @@
-import random
-
 from casino.const import URL
 from player import Player
 from MT19937 import MT19937
 import datetime as dt
 
 
-M = (2 ** 32) // 2
-
-
 def lcg_crack(player: Player):
-    n1, n2, n3 = [player.play('Lcg', 1, 1)['realNumber'] for _ in range(3)]
+    M = (2 ** 32) // 2
+    n1 = player.play('Lcg', 1, 1)['realNumber']
+    n2 = player.play('Lcg', 1, 1)['realNumber']
+    n3 = player.play('Lcg', 1, 1)['realNumber']
 
     a = ((n3 - n2) * pow((n2 - n1), -1, M)) % M
-
     b = (n2 - n1 * a) % M
     print(f'A={a}, B={b}')
 
-    val = player.play('Lcg', 1, 1)['realNumber']
-    num = (a * val + b) % M
+    value = player.play('Lcg', 1, 1)['realNumber']
+    num = (a * value + b) % M
 
     while player.money <= 1000000:
         print(player.play('Lcg', player.money, num))
@@ -27,7 +24,6 @@ def lcg_crack(player: Player):
 
 def mt_crack(player):
     time_seed = player.creation_time - dt.datetime.fromtimestamp(0, dt.timezone.utc)
-
     generator = MT19937(int(time_seed.total_seconds()))
     while player.money <= 1000000:
         num = generator.extract_number()
@@ -35,9 +31,9 @@ def mt_crack(player):
 
 
 def main():
-    player = Player(random.randint(1, 10000), URL)
+    player = Player(URL)
     lcg_crack(player)
-    player = Player(random.randint(1, 10000), URL)
+    player = Player(URL)
     mt_crack(player)
 
 
