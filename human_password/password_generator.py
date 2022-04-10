@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import csv
 import random
@@ -13,7 +14,8 @@ def generate(num, top_100, top_10m):
     for _ in range(num):
         r = random.randint(1, 100)
         if r <= 10:
-            passwords.append(random.choice(top_100))
+            a = random.choice(top_100)
+            passwords.append(a)
         elif r <= 95:
             passwords.append(random.choice(top_10m))
         else:
@@ -29,15 +31,15 @@ def pass_md5(password: str) -> Tuple[str]:
 def pass_bcrypt(password: str) -> Tuple[str, str]:
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(bytes(password, encoding='ascii'), salt).decode()
-    return salt.decode(), hashed
+    return hashed, salt.decode()
 
 
 def sha_1(password: str) -> Tuple[str, str]:
     salt = bcrypt.gensalt().decode()
-    return salt, hashlib.sha1(bytes(password+salt, encoding='ascii')).hexdigest()
+    return hashlib.sha1(bytes(password+salt, encoding='ascii')).hexdigest(), salt
 
 
-def main(num: int, top_100: TextIO, top_10m: TextIO, output: TextIO, algorithm: str):
+def main(num: int, top_100: TextIO, top_10m: TextIO, output: TextIO, algorithm: str, with_header: bool):
     algorithms = {'md5': pass_md5, 'bcrypt': pass_bcrypt, 'sha-1': sha_1}
 
     top_100_passwords = [password.strip() for password in top_100.readlines()]
@@ -45,11 +47,12 @@ def main(num: int, top_100: TextIO, top_10m: TextIO, output: TextIO, algorithm: 
 
     passwords = generate(num, top_100_passwords, top_10m_passwords)
 
-    csv_table = csv.writer(output)
-    if algorithm in ['sha-1', 'bcrypt']:
-        csv_table.writerow(['salt', 'hash'])
-    else:
-        csv_table.writerow(['hash'])
+    csv_table = csv.writer(output, delimiter='.')
+    if with_header:
+        if algorithm in ['sha-1', 'bcrypt']:
+            csv_table.writerow(['hash', 'salt'])
+        else:
+            csv_table.writerow(['hash'])
 
     for password in passwords:
         csv_table.writerow(algorithms[algorithm](password))
@@ -60,7 +63,8 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--num', type=int, default=100)
     parser.add_argument('-t', '--top_100', type=argparse.FileType('r'), default=open('100-passwords.txt'))
     parser.add_argument('-m', '--top_10M', type=argparse.FileType('r'), default=open('10m-passwords.txt'))
-    parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=open('10k_hash.csv', 'w'))
-    parser.add_argument('--algorithm', choices=['md5', 'sha-1', 'bcrypt'], default='md5')
+    parser.add_argument('-o', '--output', type=argparse.FileType('w'))
+    parser.add_argument('-a', '--algorithm', choices=['md5', 'sha-1', 'bcrypt'], default='md5')
+    parser.add_argument('--with-header', action='store_true', default=False)
     _args = parser.parse_args()
-    main(_args.num, _args.top_100, _args.top_10M, _args.output, _args.algorithm)
+    main(_args.num, _args.top_100, _args.top_10M, _args.output, _args.algorithm, _args.with_header)
