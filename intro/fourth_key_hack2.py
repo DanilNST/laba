@@ -34,10 +34,10 @@ def vigenere_xor(text, key):
 
 
 def xor_key_hack(encrypted):
-    key = "L0l"
+    key = 'L0l'
 
     key_length = find_key_length(encrypted)
-    items = [encrypted[x:x + 12] for x in range(0, len(encrypted), 12)]
+    items = [encrypted[x : x + 12] for x in range(0, len(encrypted), 12)]
 
     possible_keys = []
     for n in range(0, key_length):
@@ -58,6 +58,11 @@ def xor_key_hack(encrypted):
     return vigenere_xor(encrypted, key)
 
 
-with open('sources/xor_secret.txt', 'r') as f:
-    data = f.readlines()[1]
-print(xor_key_hack(data))
+def main():
+    with open('sources/xor_secret.txt', 'r') as f:
+        data = f.readlines()[1]
+    print(xor_key_hack(data))
+
+
+if __name__ == '__main__':
+    main()
